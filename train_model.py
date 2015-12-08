@@ -8,6 +8,10 @@ import theano
 from matplotlib import pyplot
 import pickle
 import os
+import wget
+
+if not os.path.exists('fonts.hdf5'):
+    wget.download('https://s3.amazonaws.com/erikbern/fonts.hdf5')
 
 f = h5py.File('fonts.hdf5', 'r')
 data = f['fonts']
