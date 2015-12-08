@@ -17,9 +17,9 @@ wh = data.shape[2] * data.shape[3]
 
 def iterate_minibatches(batch_size=128):
     while True:
-        batch_is = numpy.zeros((batch_size, n), dtype=numpy.int32)
-        batch_js = numpy.zeros((batch_size, k), dtype=numpy.int32)
-        batch_ds = numpy.zeros((batch_size, wh))
+        batch_is = numpy.zeros((batch_size, n), dtype=theano.config.floatX)
+        batch_js = numpy.zeros((batch_size, k), dtype=theano.config.floatX)
+        batch_ds = numpy.zeros((batch_size, wh), dtype=theano.config.floatX)
         for z in xrange(batch_size):
             i = random.randint(0, n-1)
             j = random.randint(0, k-1)
@@ -33,7 +33,9 @@ def iterate_minibatches(batch_size=128):
 def get_model(input_i, input_j):
     input_i = lasagne.layers.InputLayer(shape=(None, n), input_var=input_i)
     input_j = lasagne.layers.InputLayer(shape=(None, k), input_var=input_j)
-    network = lasagne.layers.ConcatLayer([input_i, input_j])
+    input_i_bottleneck = lasagne.layers.DenseLayer(input_i, 64)
+    input_j_bottleneck = lasagne.layers.DenseLayer(input_j, 64)
+    network = lasagne.layers.ConcatLayer([input_i_bottleneck, input_j_bottleneck])
     for i in xrange(3):
         network = lasagne.layers.DenseLayer(network, 1024)
 
@@ -41,8 +43,8 @@ def get_model(input_i, input_j):
     return output
 
 
-input_i = T.imatrix('input_i')
-input_j = T.imatrix('input_j')
+input_i = T.matrix('input_i')
+input_j = T.matrix('input_j')
 output = T.matrix('output')
 
 network = get_model(input_i, input_j)
@@ -65,7 +67,7 @@ for input_i, input_j, output in iterate_minibatches():
     print train_fn(input_i, input_j, output)
     real = output.reshape(output.shape[0], 64, 64)
     pred = run_fn(input_i, input_j).reshape((output.shape[0], 64, 64))
-    if random.random() < 0.01:
+    if random.random() < 0.001:
         print 'saving model...'
         params = lasagne.layers.get_all_param_values(network)
         f = open('model.pickle', 'w')
