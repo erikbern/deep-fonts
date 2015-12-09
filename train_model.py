@@ -28,7 +28,7 @@ def iterate_minibatches(batch_size=128):
             i = random.randint(0, n-1)
             j = random.randint(0, k-1)
             batch_is[z][i] = 1
-            batch_is[z][j] = 1
+            batch_js[z][j] = 1
             batch_ds[z] = data[i][j].flatten() * 1. / 255
 
         yield batch_is, batch_js, batch_ds
@@ -70,16 +70,16 @@ print 'training...'
 for input_i, input_j, output in iterate_minibatches():
     print train_fn(input_i, input_j, output)
     real = output.reshape(output.shape[0], 64, 64)
-    pred = run_fn(input_i, input_j).reshape((output.shape[0], 64, 64))
     if random.random() < 0.001:
         print 'saving model...'
         params = lasagne.layers.get_all_param_values(network)
         f = open('model.pickle', 'w')
         pickle.dump(params, f)
         f.close()
-        
-        f, (ax1, ax2) = pyplot.subplots(1, 2)
-        ax1.matshow(real[0], cmap='gray')
-        ax2.matshow(pred[0], cmap='gray')
-        f.savefig("real_vs_pred.png")
-        pyplot.clf()
+
+    pred = run_fn(input_i, input_j).reshape((output.shape[0], 64, 64))
+    f, (ax1, ax2) = pyplot.subplots(1, 2)
+    ax1.matshow(real[0], cmap='gray')
+    ax2.matshow(pred[0], cmap='gray')
+    f.savefig("real_vs_pred.png")
+    pyplot.clf()
