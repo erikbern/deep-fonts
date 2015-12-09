@@ -4,32 +4,56 @@ import os
 import random
 import string
 import numpy
+import sys
+
+w, h = 64, 64
+w0, h0 = 512, 512
+
+chars = string.uppercase + string.lowercase + string.digits
+
+blank = PIL.Image.new('L', (w0, h0), 255)
 
 def read_font(fn):
-    font = PIL.ImageFont.truetype(fn, int(min(w0, h0) * 0.75))
+    font = PIL.ImageFont.truetype(fn, int(min(w0, h0) * 0.5))
 
-    data = []
+    # We need to make sure we scale down the fonts but preserve the vertical alignment
+    min_ly = float('inf')
+    max_hy = float('-inf')
+    max_width = 0
+    imgs = []
+
     for char in chars:
         print '...', char
         # Draw character
         img = PIL.Image.new("L", (w0, h0), 255)
         draw = PIL.ImageDraw.Draw(img)
-        draw.text((0, 0), char, font=font)
+        draw.text((int(w0*0.25), int(h0*0.25)), char, font=font)
 
-        # Crop whitespace
+        # Get bounding box
         diff = PIL.ImageChops.difference(img, blank)
-        img = img.crop(diff.getbbox())
+        lx, ly, hx, hy = diff.getbbox()
+        min_ly = min(min_ly, ly)
+        max_hy = max(max_hy, hy)
+        max_width = max(max_width, hx - lx)
+        imgs.append((lx, hx, img))
 
-        # Expand to square
-        wi, hi, m = img.size[0], img.size[1], max(img.size)
-        img_new = PIL.Image.new('L', (m, m), 255)
-        img_new.paste(img, ((m-wi)/2, (m-hi)/2))
+    print 'crop dims:', max_hy - min_ly, max_width
+    scale_factor = min(1.0 * h / (max_hy - min_ly), 1.0 * w / max_width)
+    data = []
+
+    for lx, hx, img in imgs:
+        img = img.crop((lx, min_ly, hx, max_hy))
 
         # Resize to smaller
-        img = img_new.resize((w, h), PIL.Image.ANTIALIAS)
+        new_width = (hx-lx) * scale_factor
+        img = img.resize((int(new_width), h), PIL.Image.ANTIALIAS)
+
+        # Expand to square
+        img_sq = PIL.Image.new('L', (w, h), 255)
+        img_sq.paste(img, (int((w - new_width)/2), 0))
 
         # Convert to numpy array
-        matrix = numpy.array(img.getdata()).reshape((h, w))
+        matrix = numpy.array(img_sq.getdata()).reshape((h, w))
         matrix = 255 - matrix
         data.append(matrix)
 
@@ -43,17 +67,11 @@ def get_ttfs(d='scraper/fonts'):
                 yield os.path.join(dirpath, filename)
 
                 
-chars = string.uppercase + string.lowercase + string.digits
-
-w, h = 64, 64
-w0, h0 = 512, 512
-blank = PIL.Image.new('L', (w0, h0), 255)
-
 f = h5py.File('fonts.hdf5', 'w')
 dset = f.create_dataset('fonts', (1, len(chars), h, w), chunks=(1, len(chars), h, w), maxshape=(None, len(chars), h, w), dtype='i1')
 
 i = 0
-for fn in get_ttfs():
+for fn in get_ttfs(d=sys.argv[1]):
     print fn
     try:
         data = read_font(fn)
