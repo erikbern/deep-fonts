@@ -35,9 +35,16 @@ class Model(object):
         return theano.function([self.input_i, self.input_j], self.prediction)
 
     def try_load(self):
-        if os.path.exists('model.pickle'):
-            print 'loading model...'
-            lasagne.layers.set_all_param_values(self.network, pickle.load(open('model.pickle')))
+        if not os.path.exists('model.pickle'):
+            return
+        print 'loading model...'
+        params = lasagne.layers.get_all_params(self.network)
+        values = pickle.load(open('model.pickle'))
+        for p, v in zip(params, values):
+            if p.get_value().shape != v.shape:
+                print p, 'and', v, 'have different shape!!!'
+            else:
+                p.set_value(v)
 
     def save(self):
         print 'saving model...'
