@@ -1,14 +1,12 @@
-import lasagne
 import h5py
 import random
 import numpy
-import theano.tensor as T
-import lasagne
 import theano
 from matplotlib import pyplot
 import pickle
 import os
 import wget
+import model
 
 if not os.path.exists('fonts.hdf5'):
     wget.download('https://s3.amazonaws.com/erikbern/fonts.hdf5')
@@ -33,49 +31,17 @@ def iterate_minibatches(batch_size=128):
 
         yield batch_is, batch_js, batch_ds
 
-
-def get_model(input_i, input_j):
-    input_i = lasagne.layers.InputLayer(shape=(None, n), input_var=input_i)
-    input_j = lasagne.layers.InputLayer(shape=(None, k), input_var=input_j)
-    input_i_bottleneck = lasagne.layers.DenseLayer(input_i, 64)
-    input_j_bottleneck = lasagne.layers.DenseLayer(input_j, 64)
-    network = lasagne.layers.ConcatLayer([input_i_bottleneck, input_j_bottleneck])
-    for i in xrange(3):
-        network = lasagne.layers.DenseLayer(network, 1024)
-
-    output = lasagne.layers.DenseLayer(network, wh, nonlinearity=lasagne.nonlinearities.sigmoid)
-    return output
-
-
-input_i = T.matrix('input_i')
-input_j = T.matrix('input_j')
-output = T.matrix('output')
-
-network = get_model(input_i, input_j)
-prediction = lasagne.layers.get_output(network)
-print prediction.dtype
-loss = lasagne.objectives.binary_crossentropy(prediction, output).mean()
-params = lasagne.layers.get_all_params(network, trainable=True)
-updates = lasagne.updates.nesterov_momentum(loss, params, learning_rate=lasagne.utils.floatX(0.1), momentum=lasagne.utils.floatX(0.9))
-
-if os.path.exists('model.pickle'):
-    print 'loading model...'
-    lasagne.layers.set_all_param_values(network, pickle.load(open('model.pickle')))
-
-print 'compiling...'
-train_fn = theano.function([input_i, input_j, output], loss, updates=updates)
-run_fn = theano.function([input_i, input_j], prediction)
+model = model.Model(n, k, wh)
+model.try_load()
+train_fn = model.get_train_fn()
+run_fn = model.get_run_fn()
 
 print 'training...'
 for input_i, input_j, output in iterate_minibatches():
     print train_fn(input_i, input_j, output)
     real = output.reshape(output.shape[0], 64, 64)
     if random.random() < 0.001:
-        print 'saving model...'
-        params = lasagne.layers.get_all_param_values(network)
-        f = open('model.pickle', 'w')
-        pickle.dump(params, f)
-        f.close()
+        model.save()
 
     pred = run_fn(input_i, input_j).reshape((output.shape[0], 64, 64))
     f, (ax1, ax2) = pyplot.subplots(1, 2)
