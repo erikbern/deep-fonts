@@ -1,14 +1,12 @@
-import lasagne
 import h5py
 import random
 import numpy
-import theano.tensor as T
-import lasagne
 import theano
 import pickle
 import os
 import wget
 import PIL, PIL.Image
+import model
 
 if not os.path.exists('fonts.hdf5'):
     wget.download('https://s3.amazonaws.com/erikbern/fonts.hdf5')
@@ -29,33 +27,9 @@ def iterate_minibatches():
 
         yield batch_is, batch_js
 
-
-def get_model(input_i, input_j):
-    input_i = lasagne.layers.InputLayer(shape=(None, n), input_var=input_i)
-    input_j = lasagne.layers.InputLayer(shape=(None, k), input_var=input_j)
-    input_i_bottleneck = lasagne.layers.DenseLayer(input_i, 64)
-    input_j_bottleneck = lasagne.layers.DenseLayer(input_j, 64)
-    network = lasagne.layers.ConcatLayer([input_i_bottleneck, input_j_bottleneck])
-    for i in xrange(3):
-        network = lasagne.layers.DenseLayer(network, 1024)
-
-    output = lasagne.layers.DenseLayer(network, wh, nonlinearity=lasagne.nonlinearities.sigmoid)
-    return output
-
-
-input_i = T.matrix('input_i')
-input_j = T.matrix('input_j')
-output = T.matrix('output')
-
-network = get_model(input_i, input_j)
-prediction = lasagne.layers.get_output(network)
-
-if os.path.exists('model.pickle'):
-    print 'loading model...'
-    lasagne.layers.set_all_param_values(network, pickle.load(open('model.pickle')))
-
-print 'compiling...'
-run_fn = theano.function([input_i, input_j], prediction)
+model = model.Model(n, k, wh)
+model.try_load()
+run_fn = model.get_run_fn()
 
 print 'generating...'
 for input_i, input_j in iterate_minibatches():
