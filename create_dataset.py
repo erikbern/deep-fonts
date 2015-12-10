@@ -46,11 +46,15 @@ def read_font(fn):
 
         # Resize to smaller
         new_width = (hx-lx) * scale_factor
+        new_height = (max_hy - min_ly) * scale_factor
         img = img.resize((int(new_width), h), PIL.Image.ANTIALIAS)
 
         # Expand to square
         img_sq = PIL.Image.new('L', (w, h), 255)
-        img_sq.paste(img, (int((w - new_width)/2), 0))
+        offset_x = (w - new_width)/2
+        offset_y = (h - new_height)/2
+        print offset_x, offset_y
+        img_sq.paste(img, (int(offset_x), int(offset_y)))
 
         # Convert to numpy array
         matrix = numpy.array(img_sq.getdata()).reshape((h, w))
@@ -75,7 +79,7 @@ for fn in get_ttfs(d=sys.argv[1]):
     print fn
     try:
         data = read_font(fn)
-    except IOError:
+    except:
         print 'was not able to read', fn
         continue
 
