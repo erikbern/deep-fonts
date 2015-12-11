@@ -12,11 +12,12 @@ class Model(object):
         
         input_i = lasagne.layers.InputLayer(shape=(None, n), input_var=self.input_i)
         input_j = lasagne.layers.InputLayer(shape=(None, k), input_var=self.input_j)
-        input_i_bottleneck = lasagne.layers.DenseLayer(input_i, 64)
+        input_i_bottleneck = lasagne.layers.DenseLayer(input_i, 256)
         input_j_bottleneck = lasagne.layers.DenseLayer(input_j, 64)
         network = lasagne.layers.ConcatLayer([input_i_bottleneck, input_j_bottleneck])
-        for i in xrange(3):
-            network = lasagne.layers.DenseLayer(network, 1024)
+        network = lasagne.layers.DropoutLayer(network)
+        for i in xrange(4):
+            network = lasagne.layers.DenseLayer(network, 2048)
 
         network = lasagne.layers.DenseLayer(network, wh, nonlinearity=lasagne.nonlinearities.sigmoid)
         self.network = network
@@ -43,7 +44,7 @@ class Model(object):
         values = pickle.load(open('model.pickle'))
         for p, v in zip(params, values):
             if p.get_value().shape != v.shape:
-                print p, 'and', v, 'have different shape!!!'
+                print p, p.get_value().shape, 'and', v.shape, 'have different shape!!!'
             else:
                 p.set_value(v)
 
