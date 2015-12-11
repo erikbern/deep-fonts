@@ -19,17 +19,17 @@ wh = data.shape[2] * data.shape[3]
 
 def iterate_minibatches(batch_size=128):
     while True:
-        batch_is = numpy.zeros((batch_size, n), dtype=theano.config.floatX)
-        batch_js = numpy.zeros((batch_size, k), dtype=theano.config.floatX)
+        batch_fonts = numpy.zeros((batch_size, n), dtype=theano.config.floatX)
+        batch_chars = numpy.zeros((batch_size, k), dtype=theano.config.floatX)
         batch_ds = numpy.zeros((batch_size, wh), dtype=theano.config.floatX)
         for z in xrange(batch_size):
             i = random.randint(0, n-1)
             j = random.randint(0, k-1)
-            batch_is[z][i] = 1
-            batch_js[z][j] = 1
+            batch_fonts[z][i] = 1
+            batch_chars[z][j] = 1
             batch_ds[z] = data[i][j].flatten() * 1. / 255
 
-        yield batch_is, batch_js, batch_ds
+        yield batch_fonts, batch_chars, batch_ds
 
 model = model.Model(n, k, wh)
 model.try_load()
@@ -37,14 +37,14 @@ train_fn = model.get_train_fn()
 run_fn = model.get_run_fn()
 
 print 'training...'
-for input_i, input_j, output in iterate_minibatches():
-    loss, reg = train_fn(input_i, input_j, output)
+for input_font, input_char, output in iterate_minibatches():
+    loss, reg = train_fn(input_font, input_char, output)
     print '%.9f %.9f' % (float(loss), float(reg))
     real = output.reshape(output.shape[0], 64, 64)
     if random.random() < 0.001:
         model.save()
 
-    pred = run_fn(input_i, input_j).reshape((output.shape[0], 64, 64))
+    pred = run_fn(input_font, input_char).reshape((output.shape[0], 64, 64))
     f, (ax1, ax2) = pyplot.subplots(1, 2)
     ax1.matshow(real[0], cmap='gray')
     ax2.matshow(pred[0], cmap='gray')

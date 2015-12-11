@@ -6,15 +6,15 @@ import pickle
 
 class Model(object):
     def __init__(self, n, k, wh):
-        self.input_i = T.matrix('input_i')
-        self.input_j = T.matrix('input_j')
+        self.input_font = T.matrix('input_font')
+        self.input_char = T.matrix('input_char')
         self.target = T.matrix('target')
         
-        input_i = lasagne.layers.InputLayer(shape=(None, n), input_var=self.input_i)
-        input_j = lasagne.layers.InputLayer(shape=(None, k), input_var=self.input_j)
-        input_i_bottleneck = lasagne.layers.DenseLayer(input_i, 256)
-        input_j_bottleneck = lasagne.layers.DenseLayer(input_j, 64)
-        network = lasagne.layers.ConcatLayer([input_i_bottleneck, input_j_bottleneck])
+        input_font = lasagne.layers.InputLayer(shape=(None, n), input_var=self.input_font)
+        input_char = lasagne.layers.InputLayer(shape=(None, k), input_var=self.input_char)
+        input_font_bottleneck = lasagne.layers.DenseLayer(input_font, 256)
+        input_char_bottleneck = lasagne.layers.DenseLayer(input_char, 64)
+        network = lasagne.layers.ConcatLayer([input_font_bottleneck, input_char_bottleneck])
         network = lasagne.layers.DropoutLayer(network)
         for i in xrange(4):
             network = lasagne.layers.DenseLayer(network, 2048)
@@ -31,10 +31,10 @@ class Model(object):
         params = lasagne.layers.get_all_params(self.network, trainable=True)
         updates = lasagne.updates.nesterov_momentum(loss, params, learning_rate=lasagne.utils.floatX(1.0), momentum=lasagne.utils.floatX(0.9))
 
-        return theano.function([self.input_i, self.input_j, self.target], [loss, reg], updates=updates)
+        return theano.function([self.input_font, self.input_char, self.target], [loss, reg], updates=updates)
 
     def get_run_fn(self):
-        return theano.function([self.input_i, self.input_j], self.prediction)
+        return theano.function([self.input_font, self.input_char], self.prediction)
 
     def try_load(self):
         if not os.path.exists('model.pickle'):
