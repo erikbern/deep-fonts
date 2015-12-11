@@ -21,12 +21,13 @@ class Model(object):
 
         network = lasagne.layers.DenseLayer(network, wh, nonlinearity=lasagne.nonlinearities.sigmoid)
         self.network = network
-        self.prediction = lasagne.layers.get_output(network)
+        self.prediction_train = lasagne.layers.get_output(network)
+        self.prediction = lasagne.layers.get_output(network, deterministic=True)
         print self.prediction.dtype
 
-    def get_train_fn(self, lambd=1e-6):
+    def get_train_fn(self, lambd=1e-7):
         print 'compiling training fn'
-        loss = lasagne.objectives.squared_error(self.prediction, self.target).mean()
+        loss = lasagne.objectives.squared_error(self.prediction_train, self.target).mean()
         reg = lasagne.regularization.regularize_network_params(self.network, lasagne.regularization.l2) * lambd
         params = lasagne.layers.get_all_params(self.network, trainable=True)
         updates = lasagne.updates.nesterov_momentum(loss, params, learning_rate=lasagne.utils.floatX(1.0), momentum=lasagne.utils.floatX(0.9))
