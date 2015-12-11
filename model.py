@@ -23,7 +23,7 @@ class Model(object):
         self.prediction = lasagne.layers.get_output(network)
         print self.prediction.dtype
 
-    def get_train_fn(self, lambd=1e-6):
+    def get_train_fn(self, lambd=1e-7):
         print 'compiling training fn'
         loss = lasagne.objectives.squared_error(self.prediction, self.target).mean()
         reg = lasagne.regularization.l2(self.prediction) * lambd
