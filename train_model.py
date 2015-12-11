@@ -38,7 +38,8 @@ run_fn = model.get_run_fn()
 
 print 'training...'
 for input_i, input_j, output in iterate_minibatches():
-    print train_fn(input_i, input_j, output)
+    loss, reg = train_fn(input_i, input_j, output)
+    print '%.9f %.9f' % (float(loss), float(reg))
     real = output.reshape(output.shape[0], 64, 64)
     if random.random() < 0.001:
         model.save()
