@@ -47,7 +47,7 @@ def iterate_run(dataset, fn, tag):
         total_loss += float(loss)
         total_reg += float(reg)
         total_count += 1
-        sys.stdout.write('%s perf: %.9f %.9f accumulated: %.9f %.9f\r' % (tag, float(loss), float(reg), total_loss / total_count, total_reg / total_count))
+        sys.stdout.write('%s perf: %.9f %.9f (last minibatch: %.9f %.9f)\r' % (tag, total_loss / total_count, total_reg / total_count, float(loss), float(reg)))
         sys.stdout.flush()
 
     sys.stdout.write('\n')
@@ -55,8 +55,8 @@ def iterate_run(dataset, fn, tag):
 
 model = model.Model(n, k, wh)
 model.try_load()
-train_fn = model.get_train_fn(updates=True)
-test_fn = model.get_train_fn(updates=False)
+train_fn = model.get_train_fn()
+test_fn = model.get_test_fn()
 run_fn = model.get_run_fn()
 
 print 'training...'

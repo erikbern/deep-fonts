@@ -5,7 +5,7 @@ import os
 import pickle
 
 class Model(object):
-    def __init__(self, n, k, wh):
+    def __init__(self, n, k, wh, lambd=1e-7):
         self.input_font = T.matrix('input_font')
         self.input_char = T.matrix('input_char')
         self.target = T.matrix('target')
@@ -24,17 +24,19 @@ class Model(object):
         self.prediction_train = lasagne.layers.get_output(network)
         self.prediction = lasagne.layers.get_output(network, deterministic=True)
         print self.prediction.dtype
+        self.loss = lasagne.objectives.squared_error(self.prediction_train, self.target).mean()
+        self.reg = lasagne.regularization.regularize_network_params(self.network, lasagne.regularization.l2) * lambd
 
-    def get_train_fn(self, lambd=1e-7, updates=True):
+    def get_train_fn(self):
         print 'compiling training fn'
-        loss = lasagne.objectives.squared_error(self.prediction_train, self.target).mean()
-        reg = lasagne.regularization.regularize_network_params(self.network, lasagne.regularization.l2) * lambd
         params = lasagne.layers.get_all_params(self.network, trainable=True)
-        kwargs = {}
-        if updates:
-            kwargs['updates'] = lasagne.updates.nesterov_momentum(loss, params, learning_rate=lasagne.utils.floatX(1.0), momentum=lasagne.utils.floatX(0.9))
+        updates = lasagne.updates.nesterov_momentum(self.loss + self.reg, params, learning_rate=lasagne.utils.floatX(1.0), momentum=lasagne.utils.floatX(0.9))
+        return theano.function([self.input_font, self.input_char, self.target], [self.loss, self.reg], updates=updates)
 
-        return theano.function([self.input_font, self.input_char, self.target], [loss, reg], **kwargs)
+    def get_test_fn(self):
+        print 'compiling testing fn'
+        params = lasagne.layers.get_all_params(self.network, trainable=False)
+        return theano.function([self.input_font, self.input_char, self.target], [self.loss, self.reg])
 
     def get_run_fn(self):
         return theano.function([self.input_font, self.input_char], self.prediction)
