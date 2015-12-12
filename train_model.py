@@ -37,17 +37,17 @@ def iterate_minibatches(dataset, batch_size=128):
             batch_chars[z][j] = 1
             batch_ds[z] = data[i][j].flatten() * 1. / 255
 
-        yield batch_fonts, batch_chars, batch_ds
+        yield 1.0 * offset / len(dataset), batch_fonts, batch_chars, batch_ds
 
         
 def iterate_run(dataset, fn, tag):
     total_loss, total_reg, total_count = 0, 0, 0
-    for input_font, input_char, output in iterate_minibatches(dataset):
+    for progress, input_font, input_char, output in iterate_minibatches(dataset):
         loss, reg = fn(input_font, input_char, output)
         total_loss += float(loss)
         total_reg += float(reg)
         total_count += 1
-        sys.stdout.write('%s perf: %.9f %.9f (last minibatch: %.9f %.9f)\r' % (tag, total_loss / total_count, total_reg / total_count, float(loss), float(reg)))
+        sys.stdout.write('%s: %6.2f%%, perf: %.6f + %.6f (last minibatch: %.6f + %.6f)\r' % (tag, 100.0 * progress, total_loss / total_count, total_reg / total_count, float(loss), float(reg)))
         sys.stdout.flush()
 
     sys.stdout.write('\n')
