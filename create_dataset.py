@@ -7,14 +7,14 @@ import numpy
 import sys
 
 w, h = 64, 64
-w0, h0 = 512, 512
+w0, h0 = 256, 256
 
 chars = string.uppercase + string.lowercase + string.digits
 
-blank = PIL.Image.new('L', (w0, h0), 255)
+blank = PIL.Image.new('L', (w0*3, h0*3), 255)
 
 def read_font(fn):
-    font = PIL.ImageFont.truetype(fn, int(min(w0, h0) * 0.5))
+    font = PIL.ImageFont.truetype(fn, min(w0, h0))
 
     # We need to make sure we scale down the fonts but preserve the vertical alignment
     min_ly = float('inf')
@@ -25,9 +25,9 @@ def read_font(fn):
     for char in chars:
         print '...', char
         # Draw character
-        img = PIL.Image.new("L", (w0, h0), 255)
+        img = PIL.Image.new("L", (w0*3, h0*3), 255)
         draw = PIL.ImageDraw.Draw(img)
-        draw.text((int(w0*0.25), int(h0*0.25)), char, font=font)
+        draw.text((w0, h0), char, font=font)
 
         # Get bounding box
         diff = PIL.ImageChops.difference(img, blank)
@@ -79,7 +79,7 @@ for fn in get_ttfs(d=sys.argv[1]):
     print fn
     try:
         data = read_font(fn)
-    except:
+    except: # IOError:
         print 'was not able to read', fn
         continue
 
