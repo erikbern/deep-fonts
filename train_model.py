@@ -23,7 +23,7 @@ for i in xrange(n):
     for j in xrange(k):
         dataset.append((i, j))
 
-train_set, test_set = cross_validation.train_test_split(dataset, test_size=2000, random_state=0)
+train_set, test_set = cross_validation.train_test_split(dataset, test_size=10000, random_state=0)
 
 def iterate_minibatches(dataset, batch_size=128):
     random.shuffle(dataset)
@@ -39,6 +39,20 @@ def iterate_minibatches(dataset, batch_size=128):
 
         yield batch_fonts, batch_chars, batch_ds
 
+        
+def iterate_run(dataset, fn, tag):
+    total_loss, total_reg, total_count = 0, 0, 0
+    for input_font, input_char, output in iterate_minibatches(dataset):
+        loss, reg = test_fn(input_font, input_char, output)
+        total_loss += float(loss)
+        total_reg += float(reg)
+        total_count += 1
+        sys.stdout.write('%s perf: %.9f %.9f accumulated: %.9f %.9f\r' % (tag, float(loss), float(reg), total_loss / total_count, total_reg / total_count))
+        sys.stdout.flush()
+
+    sys.stdout.write('\n')
+
+
 model = model.Model(n, k, wh)
 model.try_load()
 train_fn = model.get_train_fn(updates=True)
@@ -49,21 +63,11 @@ print 'training...'
 epoch = 0
 while True:
     print 'epoch', epoch
-    for input_font, input_char, output in iterate_minibatches(train_set):
-        loss, reg = train_fn(input_font, input_char, output)
-        sys.stdout.write('Train perf: %.9f %.9f\r' % (float(loss), float(reg)))
-        sys.stdout.flush()
-        break
-    sys.stdout.write('\n')
+    iterate_run(train_set, train_fn, 'train')
+    iterate_run(test_set, test_fn, 'test ')
     epoch += 1
-    total_loss, total_reg = 0, 0
-    for input_Font, input_char, output in iterate_minibatches(test_set):
-        loss, reg = test_fn(input_font, input_char, output)
-        total_loss += loss
-        total_reg += reg
-    sys.stdout.write('Test perf: %.9f %.9f\n' % (float(loss), float(reg)))
     model.save()
-    
+
     continue
     real = output.reshape(output.shape[0], 64, 64)
     pred = run_fn(input_font, input_char).reshape((output.shape[0], 64, 64))
