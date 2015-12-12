@@ -72,7 +72,7 @@ def get_ttfs(d='scraper/fonts'):
 
                 
 f = h5py.File('fonts.hdf5', 'w')
-dset = f.create_dataset('fonts', (1, len(chars), h, w), chunks=(1, len(chars), h, w), maxshape=(None, len(chars), h, w), dtype='i1')
+dset = f.create_dataset('fonts', (1, len(chars), h, w), chunks=(1, len(chars), h, w), maxshape=(None, len(chars), h, w), dtype='u1')
 
 i = 0
 for fn in get_ttfs(d=sys.argv[1]):
