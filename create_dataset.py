@@ -11,7 +11,7 @@ w0, h0 = 256, 256
 
 chars = string.uppercase + string.lowercase + string.digits
 
-blank = PIL.Image.new('L', (w0*3, h0*3), 255)
+blank = PIL.Image.new('L', (w0*5, h0*3), 255)
 
 def read_font(fn):
     font = PIL.ImageFont.truetype(fn, min(w0, h0))
@@ -25,7 +25,7 @@ def read_font(fn):
     for char in chars:
         print '...', char
         # Draw character
-        img = PIL.Image.new("L", (w0*3, h0*3), 255)
+        img = PIL.Image.new("L", (w0*5, h0*3), 255)
         draw = PIL.ImageDraw.Draw(img)
         draw.text((w0, h0), char, font=font)
 
