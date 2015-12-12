@@ -43,7 +43,7 @@ def iterate_minibatches(dataset, batch_size=128):
 def iterate_run(dataset, fn, tag):
     total_loss, total_reg, total_count = 0, 0, 0
     for input_font, input_char, output in iterate_minibatches(dataset):
-        loss, reg = test_fn(input_font, input_char, output)
+        loss, reg = fn(input_font, input_char, output)
         total_loss += float(loss)
         total_reg += float(reg)
         total_count += 1
