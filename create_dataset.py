@@ -47,7 +47,7 @@ def read_font(fn):
         # Resize to smaller
         new_width = (hx-lx) * scale_factor
         new_height = (max_hy - min_ly) * scale_factor
-        img = img.resize((int(new_width), h), PIL.Image.ANTIALIAS)
+        img = img.resize((int(new_width), int(new_height)), PIL.Image.ANTIALIAS)
 
         # Expand to square
         img_sq = PIL.Image.new('L', (w, h), 255)
