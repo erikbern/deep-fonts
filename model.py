@@ -15,7 +15,7 @@ class Model(object):
         input_font_bottleneck = lasagne.layers.DenseLayer(input_font, 256, name='input_font_bottleneck')
         input_char_bottleneck = lasagne.layers.DenseLayer(input_char, 64, name='input_char_bottleneck')
         network = lasagne.layers.ConcatLayer([input_font_bottleneck, input_char_bottleneck], name='input_concat')
-        # network = lasagne.layers.DropoutLayer(network, name='input_concat_dropout')
+        network = lasagne.layers.DropoutLayer(network, name='input_concat_dropout')
         for i in xrange(4):
             network = lasagne.layers.DenseLayer(network, 2048, name='dense_%d' % i)
 
@@ -26,11 +26,12 @@ class Model(object):
         print self.prediction.dtype
         self.loss = lasagne.objectives.squared_error(self.prediction_train, self.target).mean()
         self.reg = lasagne.regularization.regularize_network_params(self.network, lasagne.regularization.l2) * lambd
+        self.input_font_bottleneck = input_font_bottleneck
 
     def get_train_fn(self):
         print 'compiling training fn'
         params = lasagne.layers.get_all_params(self.network, trainable=True)
-        updates = lasagne.updates.nesterov_momentum(self.loss + self.reg, params, learning_rate=lasagne.utils.floatX(1.0), momentum=lasagne.utils.floatX(0.9))
+        updates = lasagne.updates.nesterov_momentum(self.loss + self.reg, params, learning_rate=lasagne.utils.floatX(0.1), momentum=lasagne.utils.floatX(0.9))
         return theano.function([self.input_font, self.input_char, self.target], [self.loss, self.reg], updates=updates)
 
     def get_test_fn(self):
