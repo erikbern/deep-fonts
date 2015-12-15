@@ -3,6 +3,7 @@ import theano
 import theano.tensor as T
 import os
 import pickle
+import numpy
 
 class Model(object):
     def __init__(self, n, k, wh, lambd=1e-7):
@@ -60,3 +61,7 @@ class Model(object):
         f = open('model.pickle', 'w')
         pickle.dump(params, f)
         f.close()
+
+    def get_font_embeddings(self):
+        ifb = self.input_font_bottleneck
+        return numpy.maximum(ifb.W.get_value() + ifb.b.get_value(), 0)

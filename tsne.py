@@ -12,8 +12,7 @@ wh = data.shape[2] * data.shape[3]
 model = Model(n, k, wh)
 model.try_load()
 
-ifb = model.input_font_bottleneck
-X = numpy.maximum(ifb.W.get_value() + ifb.b.get_value(), 0)
+X = model.get_font_embeddings()
 
 tsne = TSNE(verbose=99)
 x = tsne.fit_transform(X[:5000])
