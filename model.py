@@ -66,6 +66,8 @@ class Model(object):
         ifb = self.input_font_bottleneck
         return numpy.maximum(ifb.W.get_value() + ifb.b.get_value(), 0)
 
-    def last_nonlinearity(self, x, T=4.0):
+    def last_nonlinearity(self, x, T=9.0):
+        mean = theano.tensor.mean(x, axis=1, keepdims=True)
         std = theano.tensor.std(x, axis=1, keepdims=True)
-        return theano.tensor.nnet.sigmoid(T * x / std)
+        z = mean + T * (x - mean) / std # extremize
+        return theano.tensor.nnet.sigmoid(z)
