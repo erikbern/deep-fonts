@@ -20,7 +20,7 @@ class Model(object):
         for i in xrange(4):
             network = lasagne.layers.DenseLayer(network, 2048, name='dense_%d' % i)
 
-        network = lasagne.layers.DenseLayer(network, wh, nonlinearity=lasagne.nonlinearities.sigmoid, name='output_sigmoid')
+        network = lasagne.layers.DenseLayer(network, wh, nonlinearity=self.last_nonlinearity, name='output_sigmoid')
         self.network = network
         self.prediction_train = lasagne.layers.get_output(network)
         self.prediction = lasagne.layers.get_output(network, deterministic=True)
@@ -65,3 +65,7 @@ class Model(object):
     def get_font_embeddings(self):
         ifb = self.input_font_bottleneck
         return numpy.maximum(ifb.W.get_value() + ifb.b.get_value(), 0)
+
+    def last_nonlinearity(self, x, T=4.0):
+        std = theano.tensor.std(x, axis=1, keepdims=True)
+        return theano.tensor.nnet.sigmoid(T * x / std)
