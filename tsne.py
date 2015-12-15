@@ -2,7 +2,7 @@ import h5py
 from sklearn.manifold import TSNE
 from model import Model
 import numpy
-import PIL, PIL.Image
+import PIL, PIL.Image, PIL.ImageOps
 
 f = h5py.File('fonts.hdf5', 'r')
 data = f['fonts']
@@ -15,14 +15,18 @@ model.try_load()
 ifb = model.input_font_bottleneck
 X = numpy.maximum(ifb.W.get_value() + ifb.b.get_value(), 0)
 
-tsne = TSNE(metric='cosine', verbose=99)
+tsne = TSNE(verbose=99)
 x = tsne.fit_transform(X[:5000])
 x -= numpy.min(x, axis=0)
 M = 10000
 x *= M / numpy.max(x)
 
-canvas = PIL.Image.new('L', (M + 64, M + 64), 255)
+canvas = PIL.Image.new('L', (M + 128, M + 64), 255)
 for i in xrange(len(x)):
-    img = PIL.Image.fromarray(numpy.uint8(255 - data[i][0]))
-    canvas.paste(img, (int(x[i][0]), int(x[i][1])))
+    cx, cy = map(int, x[i])
+    img_black = PIL.Image.new('L', (64, 64), 0)
+    img = PIL.Image.fromarray(numpy.uint8(data[i][0]))
+    canvas.paste(img_black, (cx, cy), img)
+    #img = PIL.Image.fromarray(numpy.uint8(data[i][26]))
+    #canvas.paste(img_black, (cx + 64, cy), img)
 canvas.save('tsne.png')
