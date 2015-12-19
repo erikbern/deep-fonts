@@ -28,13 +28,13 @@ train_set, test_set = cross_validation.train_test_split(dataset, test_size=10000
 def iterate_minibatches(dataset, batch_size=128):
     random.shuffle(dataset)
     for offset in xrange(0, len(dataset) - batch_size, batch_size):
-        batch_fonts = numpy.zeros((batch_size, n), dtype=theano.config.floatX)
-        batch_chars = numpy.zeros((batch_size, k), dtype=theano.config.floatX)
+        batch_fonts = numpy.zeros((batch_size,), dtype=numpy.int32)
+        batch_chars = numpy.zeros((batch_size,), dtype=numpy.int32)
         batch_ds = numpy.zeros((batch_size, wh), dtype=theano.config.floatX)
         for z in xrange(batch_size):
             i, j = dataset[offset + z]
-            batch_fonts[z][i] = 1
-            batch_chars[z][j] = 1
+            batch_fonts[z] = i
+            batch_chars[z] = j
             batch_ds[z] = data[i][j].flatten() * 1. / 255
 
         yield 1.0 * offset / len(dataset), batch_fonts, batch_chars, batch_ds

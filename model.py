@@ -5,16 +5,30 @@ import os
 import pickle
 import numpy
 
+class OneHotLayer(lasagne.layers.Layer):
+    def __init__(self, incoming, nb_class, **kwargs):
+        super(OneHotLayer, self).__init__(incoming, **kwargs)
+        self.nb_class = nb_class
+
+    def get_output_for(self, incoming, **kwargs):
+        return theano.tensor.extra_ops.to_one_hot(incoming, self.nb_class)
+
+    def get_output_shape_for(self, input_shape):
+        return (input_shape[0], self.nb_class)
+
+
 class Model(object):
     def __init__(self, n, k, wh, lambd=1e-7):
-        self.input_font = T.matrix('input_font')
-        self.input_char = T.matrix('input_char')
+        self.input_font = T.ivector('input_font')
+        self.input_char = T.ivector('input_char')
         self.target = T.matrix('target')
         
-        input_font = lasagne.layers.InputLayer(shape=(None, n), input_var=self.input_font, name='input_font')
-        input_char = lasagne.layers.InputLayer(shape=(None, k), input_var=self.input_char, name='input_char')
-        input_font_bottleneck = lasagne.layers.DenseLayer(input_font, 32, name='input_font_bottleneck')
-        input_char_bottleneck = lasagne.layers.DenseLayer(input_char, 32, name='input_char_bottleneck')
+        input_font = lasagne.layers.InputLayer(shape=(None,), input_var=self.input_font, name='input_font')
+        input_char = lasagne.layers.InputLayer(shape=(None,), input_var=self.input_char, name='input_char')
+        input_font_one_hot = OneHotLayer(input_font, n)
+        input_char_one_hot = OneHotLayer(input_char, n)
+        input_font_bottleneck = lasagne.layers.DenseLayer(input_font_one_hot, 32, name='input_font_bottleneck')
+        input_char_bottleneck = lasagne.layers.DenseLayer(input_char_one_hot, 32, name='input_char_bottleneck')
         network = lasagne.layers.ConcatLayer([input_font_bottleneck, input_char_bottleneck], name='input_concat')
         network = lasagne.layers.DropoutLayer(network, name='input_concat_dropout')
         for i in xrange(4):
