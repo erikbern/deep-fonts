@@ -15,24 +15,20 @@ f = h5py.File('fonts.hdf5', 'r')
 data = f['fonts']
 n, k = data.shape[0], data.shape[1]
 wh = data.shape[2] * data.shape[3]
+n = 56443
 
-def generate_input():
-    a = random.randint(0, n-1)
+def generate_input(batch_size=128):
     while True:
         b = random.randint(0, n-1)
-        print a, '->', b
-        for p in numpy.linspace(0, 1, 10):
-            print p
-            batch_is = numpy.zeros((k, n), dtype=theano.config.floatX)
-            batch_js = numpy.zeros((k, k), dtype=theano.config.floatX)
-            i = random.randint(0, n-1)
-            for z in xrange(k):
-                batch_is[z][a] = 1-p
-                batch_is[z][b] = p
-                batch_js[z][z] = 1
+        print b, '...'
+        batch_is = numpy.zeros((k,), dtype=numpy.int32)
+        batch_js = numpy.zeros((k,), dtype=numpy.int32)
+        for z in xrange(k):
+            batch_is[z] = b
+            batch_js[z] = z
 
-            yield batch_is, batch_js
-        a = b
+        yield batch_is, batch_js
+
 
 model = model.Model(n, k, wh)
 model.try_load()
