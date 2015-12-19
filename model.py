@@ -18,7 +18,7 @@ class OneHotLayer(lasagne.layers.Layer):
 
 
 class Model(object):
-    def __init__(self, n, k, wh, lambd=1e-7):
+    def __init__(self, n, k, wh, lambd=1e-8):
         self.input_font = T.ivector('input_font')
         self.input_char = T.ivector('input_char')
         self.target = T.matrix('target')
@@ -27,8 +27,8 @@ class Model(object):
         input_char = lasagne.layers.InputLayer(shape=(None,), input_var=self.input_char, name='input_char')
         input_font_one_hot = OneHotLayer(input_font, n)
         input_char_one_hot = OneHotLayer(input_char, k)
-        input_font_bottleneck = lasagne.layers.DenseLayer(input_font_one_hot, 32, name='input_font_bottleneck', b=None, nonlinearity=None)
-        input_char_bottleneck = lasagne.layers.DenseLayer(input_char_one_hot, 32, name='input_char_bottleneck', b=None, nonlinearity=None)
+        input_font_bottleneck = lasagne.layers.DenseLayer(input_font_one_hot, 64, name='input_font_bottleneck', b=None, nonlinearity=None)
+        input_char_bottleneck = lasagne.layers.DenseLayer(input_char_one_hot, 64, name='input_char_bottleneck', b=None, nonlinearity=None)
         network = lasagne.layers.ConcatLayer([input_font_bottleneck, input_char_bottleneck], name='input_concat')
         network = lasagne.layers.DropoutLayer(network, name='input_concat_dropout')
         for i in xrange(4):
