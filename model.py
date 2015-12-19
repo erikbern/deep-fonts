@@ -27,8 +27,8 @@ class Model(object):
         input_char = lasagne.layers.InputLayer(shape=(None,), input_var=self.input_char, name='input_char')
         input_font_one_hot = OneHotLayer(input_font, n)
         input_char_one_hot = OneHotLayer(input_char, k)
-        input_font_bottleneck = lasagne.layers.DenseLayer(input_font_one_hot, 32, name='input_font_bottleneck')
-        input_char_bottleneck = lasagne.layers.DenseLayer(input_char_one_hot, 32, name='input_char_bottleneck')
+        input_font_bottleneck = lasagne.layers.DenseLayer(input_font_one_hot, 32, name='input_font_bottleneck', b=None, nonlinearity=None)
+        input_char_bottleneck = lasagne.layers.DenseLayer(input_char_one_hot, 32, name='input_char_bottleneck', b=None, nonlinearity=None)
         network = lasagne.layers.ConcatLayer([input_font_bottleneck, input_char_bottleneck], name='input_concat')
         network = lasagne.layers.DropoutLayer(network, name='input_concat_dropout')
         for i in xrange(4):
@@ -77,8 +77,7 @@ class Model(object):
         f.close()
 
     def get_font_embeddings(self):
-        ifb = self.input_font_bottleneck
-        return numpy.maximum(ifb.W.get_value() + ifb.b.get_value(), 0)
+        return self.input_font_bottleneck.W.get_value()
 
     def last_nonlinearity(self, x, T=4.0):
         return theano.tensor.nnet.sigmoid(x)
