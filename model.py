@@ -67,7 +67,8 @@ class Model(object):
         return numpy.maximum(ifb.W.get_value() + ifb.b.get_value(), 0)
 
     def last_nonlinearity(self, x, T=4.0):
-        mean = theano.tensor.mean(x, axis=1, keepdims=True)
-        std = theano.tensor.std(x, axis=1, keepdims=True)
-        z = mean + T * (x - mean) / std # extremize
-        return theano.tensor.nnet.sigmoid(z)
+        return theano.tensor.nnet.sigmoid(x)
+        #mean = theano.tensor.mean(x, axis=1, keepdims=True)
+        #std = theano.tensor.std(x, axis=1, keepdims=True)
+        #z = mean + T * (x - mean) / std # extremize
+        #return theano.tensor.nnet.sigmoid(z)
