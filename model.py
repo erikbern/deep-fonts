@@ -13,8 +13,8 @@ class Model(object):
         
         input_font = lasagne.layers.InputLayer(shape=(None, n), input_var=self.input_font, name='input_font')
         input_char = lasagne.layers.InputLayer(shape=(None, k), input_var=self.input_char, name='input_char')
-        input_font_bottleneck = lasagne.layers.DenseLayer(input_font, 256, name='input_font_bottleneck')
-        input_char_bottleneck = lasagne.layers.DenseLayer(input_char, 64, name='input_char_bottleneck')
+        input_font_bottleneck = lasagne.layers.DenseLayer(input_font, 32, name='input_font_bottleneck')
+        input_char_bottleneck = lasagne.layers.DenseLayer(input_char, 32, name='input_char_bottleneck')
         network = lasagne.layers.ConcatLayer([input_font_bottleneck, input_char_bottleneck], name='input_concat')
         network = lasagne.layers.DropoutLayer(network, name='input_concat_dropout')
         for i in xrange(4):
