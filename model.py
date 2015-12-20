@@ -22,15 +22,22 @@ def absolute_error(a, b):
 
 
 class Model(object):
-    def __init__(self, n, k, wh, lambd=1e-8):
-        self.input_font = T.ivector('input_font')
-        self.input_char = T.ivector('input_char')
+    def __init__(self, n, k, wh, lambd=1e-8, one_hot=True):
         self.target = T.matrix('target')
-        
-        input_font = lasagne.layers.InputLayer(shape=(None,), input_var=self.input_font, name='input_font')
-        input_char = lasagne.layers.InputLayer(shape=(None,), input_var=self.input_char, name='input_char')
-        input_font_one_hot = OneHotLayer(input_font, n)
-        input_char_one_hot = OneHotLayer(input_char, k)
+
+        if one_hot:
+            self.input_font = T.ivector('input_font')
+            self.input_char = T.ivector('input_char')
+            input_font = lasagne.layers.InputLayer(shape=(None,), input_var=self.input_font, name='input_font')
+            input_char = lasagne.layers.InputLayer(shape=(None,), input_var=self.input_char, name='input_char')
+            input_font_one_hot = OneHotLayer(input_font, n)
+            input_char_one_hot = OneHotLayer(input_char, k)
+        else:
+            self.input_font = T.matrix('input_font')
+            self.input_char = T.matrix('input_char')
+            input_font_one_hot = lasagne.layers.InputLayer(shape=(None, n), input_var=self.input_font, name='input_font')
+            input_char_one_hot = lasagne.layers.InputLayer(shape=(None, k), input_var=self.input_char, name='input_char')
+
         input_font_bottleneck = lasagne.layers.DenseLayer(input_font_one_hot, 64, name='input_font_bottleneck', b=None, nonlinearity=None)
         input_char_bottleneck = lasagne.layers.DenseLayer(input_char_one_hot, 64, name='input_char_bottleneck', b=None, nonlinearity=None)
         network = lasagne.layers.ConcatLayer([input_font_bottleneck, input_char_bottleneck], name='input_concat')

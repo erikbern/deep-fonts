@@ -34,7 +34,7 @@ def generate_input():
             yield batch_is, batch_js
         a = b
 
-model = model.Model(n, k, wh)
+model = model.Model(n, k, wh, one_hot=False)
 model.try_load()
 run_fn = model.get_run_fn()
 
