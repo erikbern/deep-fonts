@@ -17,8 +17,8 @@ class OneHotLayer(lasagne.layers.Layer):
         return (input_shape[0], self.nb_class)
 
 
-def absolute_error(a, b):
-    return abs(a-b)
+def loss(a, b):
+    return 0.5 * abs(a-b) + 0.5 * (a - b)**2
 
 
 class Model(object):
@@ -50,8 +50,7 @@ class Model(object):
         self.prediction_train = lasagne.layers.get_output(network)
         self.prediction = lasagne.layers.get_output(network, deterministic=True)
         print self.prediction.dtype
-        # self.loss = lasagne.objectives.squared_error(self.prediction_train, self.target).mean()
-        self.loss = absolute_error(self.prediction_train, self.target).mean()
+        self.loss = loss(self.prediction_train, self.target).mean()
         self.reg = lasagne.regularization.regularize_network_params(self.network, lasagne.regularization.l2) * lambd
         self.input_font_bottleneck = input_font_bottleneck
 
