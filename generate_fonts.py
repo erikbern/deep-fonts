@@ -16,27 +16,25 @@ data = f['fonts']
 n, k = data.shape[0], data.shape[1]
 wh = data.shape[2] * data.shape[3]
 
+model = model.Model(n, k, wh, artificial_font=True)
+model.try_load()
+run_fn = model.get_run_fn()
+
 def generate_input():
-    a = random.randint(0, n-1)
+    a = numpy.random.normal(scale=0.1, size=64)
     while True:
-        b = random.randint(0, n-1)
-        print a, '->', b
+        b = numpy.random.normal(scale=0.1, size=64)
         for p in numpy.linspace(0, 1, 10):
             print p
-            batch_is = numpy.zeros((k, n), dtype=theano.config.floatX)
-            batch_js = numpy.zeros((k, k), dtype=theano.config.floatX)
+            batch_is = numpy.zeros((k, 64), dtype=theano.config.floatX)
+            batch_js = numpy.zeros((k,), dtype=numpy.int32)
             i = random.randint(0, n-1)
             for z in xrange(k):
-                batch_is[z][a] = 1-p
-                batch_is[z][b] = p
-                batch_js[z][z] = 1
+                batch_is[z] = a * (1-p) + b * p
+                batch_js[z] = z
 
             yield batch_is, batch_js
         a = b
-
-model = model.Model(n, k, wh, one_hot=False)
-model.try_load()
-run_fn = model.get_run_fn()
 
 print 'generating...'
 frame = 0
