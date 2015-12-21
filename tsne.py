@@ -14,6 +14,8 @@ model.try_load()
 
 X = model.get_font_embeddings()
 
+print X
+
 tsne = TSNE(verbose=99)
 x = tsne.fit_transform(X[:5000])
 x -= numpy.min(x, axis=0)

@@ -67,7 +67,7 @@ def read_font(fn):
 def get_ttfs(d='scraper/fonts'):
     for dirpath, dirname, filenames in os.walk(d):
         for filename in filenames:
-            if filename.endswith('.ttf'):
+            if filename.endswith('.ttf') or filename.endswith('.otf'):
                 yield os.path.join(dirpath, filename)
 
                 
