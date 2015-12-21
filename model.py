@@ -72,17 +72,22 @@ class Model(object):
         if not os.path.exists('model.pickle'):
             return
         print 'loading model...'
-        params = lasagne.layers.get_all_params(self.network)
         values = pickle.load(open('model.pickle'))
-        for p, v in zip(params, values):
-            if p.get_value().shape != v.shape:
-                print p, p.get_value().shape, 'and', v.shape, 'have different shape!!!'
+        for p in lasagne.layers.get_all_params(self.network):
+            if p.name not in values:
+                print 'dont have value for', p.name
             else:
-                p.set_value(v)
+                value = values[p.name]
+                if p.get_value().shape != value.shape:
+                    print p.name, ':', p.get_value().shape, 'and', value.shape, 'have different shape!!!'
+                else:
+                    p.set_value(value)
 
     def save(self):
         print 'saving model...'
-        params = lasagne.layers.get_all_param_values(self.network)
+        params = {}
+        for p in lasagne.layers.get_all_params(self.network):
+            params[p.name] = p.get_value()
         f = open('model.pickle', 'w')
         pickle.dump(params, f)
         f.close()
