@@ -81,7 +81,7 @@ class Model(object):
                 if p.get_value().shape != value.shape:
                     print p.name, ':', p.get_value().shape, 'and', value.shape, 'have different shape!!!'
                 else:
-                    p.set_value(value)
+                    p.set_value(value.astype(theano.config.floatX))
 
     def save(self):
         print 'saving model...'
