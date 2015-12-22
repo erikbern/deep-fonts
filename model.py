@@ -18,7 +18,8 @@ class OneHotLayer(lasagne.layers.Layer):
 
 
 def loss(a, b):
-    return 0.5 * abs(a-b) + 0.5 * (a - b)**2
+    # return 0.5 * abs(a-b) + 0.5 * (a - b)**2
+    return abs(a-b)
 
 
 class Model(object):
@@ -43,8 +44,6 @@ class Model(object):
         network = lasagne.layers.DropoutLayer(network)
         for i in xrange(4):
             network = lasagne.layers.DenseLayer(network, 2048, name='dense_%d' % i)
-            if i < 2:
-                network = lasagne.layers.DropoutLayer(network)
 
         network = lasagne.layers.DenseLayer(network, wh, nonlinearity=self.last_nonlinearity, name='output_sigmoid')
         self.network = network
