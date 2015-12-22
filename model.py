@@ -40,9 +40,11 @@ class Model(object):
         input_char_bottleneck = lasagne.layers.DenseLayer(input_char_one_hot, d, name='input_char_bottleneck', b=None, nonlinearity=None)
 
         network = lasagne.layers.ConcatLayer([input_font_bottleneck, input_char_bottleneck], name='input_concat')
-        network = lasagne.layers.DropoutLayer(network, name='input_concat_dropout')
+        network = lasagne.layers.DropoutLayer(network)
         for i in xrange(4):
             network = lasagne.layers.DenseLayer(network, 2048, name='dense_%d' % i)
+            if i < 2:
+                network = lasagne.layers.DropoutLayer(network)
 
         network = lasagne.layers.DenseLayer(network, wh, nonlinearity=self.last_nonlinearity, name='output_sigmoid')
         self.network = network
