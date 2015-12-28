@@ -23,7 +23,8 @@ def loss(a, b):
 
 
 class Model(object):
-    def __init__(self, n, k, wh, d=16, lambd=1e-9, artificial_font=False):
+    def __init__(self, n=None, k=62, wh=64*64, d=16, lambd=1e-9, artificial_font=False):
+        self.n, self.k, self.d = n, k, d
         self.target = T.matrix('target')
 
         if artificial_font:
