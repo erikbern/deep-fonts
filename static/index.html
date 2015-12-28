@@ -1,0 +1,35 @@
+<html>
+  <head>
+    <script>
+var a = [];
+for (var i = 0; i < 16; i++)
+  a.push(0.0);
+		    
+function handleChange(elm) {
+  a[parseInt(elm.name)] = parseFloat(elm.value);
+  render();
+}
+
+function render() {
+  var img = document.getElementById('fonts');
+  img.src = "/font.png?" + a.join(",");
+}
+    </script>
+  </head>
+  <body onload="render();">
+    <form>
+      <table>
+	<tr>
+	  <td>
+	    {% for i in range(d) %}
+	    <input name="{{ i }}" type="range" min="-0.5" max="0.5" value="0.0" step="0.001" onChange="handleChange(this);"/>
+	    {% endfor %}
+	  </td>
+	  <td>
+	    <img width="512" height="512" id="fonts">
+	  </td>
+	</tr>
+      </table>
+    </form>
+  </body>
+</html>
