@@ -4,6 +4,7 @@ import numpy
 import PIL, PIL.Image, PIL.PngImagePlugin
 import StringIO
 import jinja2
+import theano
 
 model = model.Model(artificial_font=True)
 model.try_load()
@@ -22,7 +23,7 @@ def root():
 @app.route('/font.png')
 def font():
     input_i = numpy.array(map(float, flask.request.query_string.split(',')))
-    input_i = numpy.array([input_i for z in xrange(62)])
+    input_i = numpy.array([input_i for z in xrange(62)], dtype=theano.config.floatX)
     input_j = numpy.array(range(62), dtype=numpy.int32)
     pred = run_fn(input_i, input_j).reshape((62, 64, 64))
 
