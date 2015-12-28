@@ -23,7 +23,7 @@ def loss(a, b):
 
 
 class Model(object):
-    def __init__(self, n, k, wh, d=64, lambd=1e-8, artificial_font=False):
+    def __init__(self, n, k, wh, d=16, lambd=1e-9, artificial_font=False):
         self.target = T.matrix('target')
 
         if artificial_font:
@@ -41,7 +41,6 @@ class Model(object):
         input_char_bottleneck = lasagne.layers.DenseLayer(input_char_one_hot, d, name='input_char_bottleneck', b=None, nonlinearity=None)
 
         network = lasagne.layers.ConcatLayer([input_font_bottleneck, input_char_bottleneck], name='input_concat')
-        network = lasagne.layers.DropoutLayer(network)
         for i in xrange(4):
             network = lasagne.layers.DenseLayer(network, 2048, name='dense_%d' % i)
 
@@ -51,7 +50,7 @@ class Model(object):
         self.prediction = lasagne.layers.get_output(network, deterministic=True)
         print self.prediction.dtype
         self.loss = loss(self.prediction_train, self.target).mean()
-        self.reg = lasagne.regularization.regularize_network_params(self.network, lasagne.regularization.l2) * lambd
+        self.reg = lasagne.regularization.regularize_network_params(self.network, lasagne.regularization.l1) * lambd
         self.input_font_bottleneck = input_font_bottleneck
 
     def get_train_fn(self):
