@@ -23,7 +23,7 @@ def loss(a, b):
 
 
 class Model(object):
-    def __init__(self, n=None, k=62, wh=64*64, d=40, lambd=1e-7, artificial_font=False):
+    def __init__(self, n=None, k=62, wh=64*64, d=40, lambd=1e-8, artificial_font=False):
         self.n, self.k, self.d = n, k, d
         self.target = T.matrix('target')
 
@@ -34,7 +34,7 @@ class Model(object):
             self.input_font = T.ivector('input_font')
             input_font = lasagne.layers.InputLayer(shape=(None,), input_var=self.input_font, name='input_font')
             input_font_one_hot = OneHotLayer(input_font, n)
-            input_font_bottleneck = lasagne.layers.DenseLayer(input_font_one_hot, d, name='input_font_bottleneck', b=None, nonlinearity=None)
+            input_font_bottleneck = lasagne.layers.DenseLayer(input_font_one_hot, d, name='input_font_bottleneck', b=None)
 
         self.input_char = T.ivector('input_char')
         input_char = lasagne.layers.InputLayer(shape=(None,), input_var=self.input_char, name='input_char')
@@ -42,9 +42,9 @@ class Model(object):
 
         network = lasagne.layers.ConcatLayer([input_font_bottleneck, input_char_one_hot], name='input_concat')
         for i in xrange(4):
-            network = lasagne.layers.DenseLayer(network, 2048, name='dense_%d' % i)
+            network = lasagne.layers.DenseLayer(network, 2048, name='dense_%d' % i, nonlinearity=lasagne.nonlinearities.leaky_rectify)
 
-        network = lasagne.layers.DenseLayer(network, wh, nonlinearity=self.last_nonlinearity, name='output_sigmoid')
+        network = lasagne.layers.DenseLayer(network, wh, nonlinearity=lasagne.nonlinearities.sigmoid, name='output_sigmoid')
         self.network = network
         self.prediction_train = lasagne.layers.get_output(network)
         self.prediction = lasagne.layers.get_output(network, deterministic=True)
@@ -94,9 +94,3 @@ class Model(object):
     def get_font_embeddings(self):
         return self.input_font_bottleneck.W.get_value()
 
-    def last_nonlinearity(self, x, T=4.0):
-        return theano.tensor.nnet.sigmoid(x)
-        #mean = theano.tensor.mean(x, axis=1, keepdims=True)
-        #std = theano.tensor.std(x, axis=1, keepdims=True)
-        #z = mean + T * (x - mean) / std # extremize
-        #return theano.tensor.nnet.sigmoid(z)
