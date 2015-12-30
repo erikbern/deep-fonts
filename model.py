@@ -23,7 +23,7 @@ def loss(a, b):
 
 
 class Model(object):
-    def __init__(self, n=None, k=62, wh=64*64, d=16, lambd=1e-9, artificial_font=False):
+    def __init__(self, n=None, k=62, wh=64*64, d=40, lambd=1e-7, artificial_font=False):
         self.n, self.k, self.d = n, k, d
         self.target = T.matrix('target')
 
@@ -39,9 +39,8 @@ class Model(object):
         self.input_char = T.ivector('input_char')
         input_char = lasagne.layers.InputLayer(shape=(None,), input_var=self.input_char, name='input_char')
         input_char_one_hot = OneHotLayer(input_char, k)
-        input_char_bottleneck = lasagne.layers.DenseLayer(input_char_one_hot, d, name='input_char_bottleneck', b=None, nonlinearity=None)
 
-        network = lasagne.layers.ConcatLayer([input_font_bottleneck, input_char_bottleneck], name='input_concat')
+        network = lasagne.layers.ConcatLayer([input_font_bottleneck, input_char_one_hot], name='input_concat')
         for i in xrange(4):
             network = lasagne.layers.DenseLayer(network, 2048, name='dense_%d' % i)
 
