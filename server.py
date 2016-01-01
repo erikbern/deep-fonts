@@ -1,9 +1,11 @@
+import os
 import flask
 import model
 import numpy
 import PIL, PIL.Image, PIL.PngImagePlugin
 import StringIO
 import jinja2
+os.environ['THEANO_FLAGS'] = 'device=cpu'
 import theano
 
 model = model.Model(artificial_font=True)
@@ -39,7 +41,6 @@ def font():
 
 
 def main():
-    theano.config.device = 'cpu'
     app.run(host='0.0.0.0', debug=False)
 
 if __name__ == '__main__':
