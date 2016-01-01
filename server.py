@@ -39,7 +39,8 @@ def font():
 
 
 def main():
-    app.run(host='0.0.0.0', debug=True)
+    theano.config.device = 'cpu'
+    app.run(host='0.0.0.0', debug=False)
 
 if __name__ == '__main__':
     main()
