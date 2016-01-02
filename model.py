@@ -55,9 +55,10 @@ class Model(object):
 
     def get_train_fn(self):
         print 'compiling training fn'
+        learning_rate = T.scalar('learning_rate')
         params = lasagne.layers.get_all_params(self.network, trainable=True)
-        updates = lasagne.updates.nesterov_momentum(self.loss + self.reg, params, learning_rate=lasagne.utils.floatX(1.0), momentum=lasagne.utils.floatX(0.9))
-        return theano.function([self.input_font, self.input_char, self.target], [self.loss, self.reg], updates=updates)
+        updates = lasagne.updates.nesterov_momentum(self.loss + self.reg, params, learning_rate=learning_rate, momentum=lasagne.utils.floatX(0.9))
+        return theano.function([learning_rate, self.input_font, self.input_char, self.target], [self.loss, self.reg], updates=updates)
 
     def get_test_fn(self):
         print 'compiling testing fn'

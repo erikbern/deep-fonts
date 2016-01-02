@@ -9,6 +9,7 @@ import wget
 import model
 from sklearn import cross_validation
 import sys
+import functools
 
 if not os.path.exists('fonts.hdf5'):
     wget.download('https://s3.amazonaws.com/erikbern/fonts.hdf5')
@@ -23,7 +24,7 @@ for i in xrange(n):
     for j in xrange(k):
         dataset.append((i, j))
 
-train_set, test_set = cross_validation.train_test_split(dataset, test_size=10000, random_state=0)
+train_set, test_set = cross_validation.train_test_split(dataset, test_size=65536, random_state=0)
 
 def iterate_minibatches(dataset, batch_size=128):
     random.shuffle(dataset)
@@ -55,14 +56,16 @@ def iterate_run(dataset, fn, tag):
 
 model = model.Model(n, k, wh)
 model.try_load()
-train_fn = model.get_train_fn()
+train_fn_w_learning_rate = model.get_train_fn()
 test_fn = model.get_test_fn()
 run_fn = model.get_run_fn()
 
 print 'training...'
 epoch = 0
+learning_rate = 1.0
 while True:
-    print 'epoch', epoch
+    print 'epoch', epoch, 'learning rate', learning_rate
+    train_fn = functools.partial(train_fn_w_learning_rate, learning_rate)
     iterate_run(train_set, train_fn, 'train')
     iterate_run(test_set, test_fn, 'test ')
     epoch += 1
