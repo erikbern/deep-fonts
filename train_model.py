@@ -52,7 +52,7 @@ def iterate_run(dataset, fn, tag):
         sys.stdout.flush()
 
     sys.stdout.write('\n')
-    return total_reg / total_count
+    return (total_loss + total_reg) / total_count
 
 
 model = model.Model(n, k, wh)
@@ -73,7 +73,8 @@ for learning_rate in [1.0, 0.3, 0.1, 0.03, 0.01]:
         loss = iterate_run(test_set, test_fn, 'test ')
         model.save()
         if loss < best_loss:
+            print 'best loss'
             best_loss, best_epoch = loss, epoch
-        if epoch - best_epoch > 10:
+        if epoch - best_epoch > 5:
             break
         epoch += 1
