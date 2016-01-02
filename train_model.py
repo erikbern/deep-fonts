@@ -52,6 +52,7 @@ def iterate_run(dataset, fn, tag):
         sys.stdout.flush()
 
     sys.stdout.write('\n')
+    return total_reg / total_count
 
 
 model = model.Model(n, k, wh)
@@ -61,21 +62,18 @@ test_fn = model.get_test_fn()
 run_fn = model.get_run_fn()
 
 print 'training...'
-epoch = 0
-learning_rate = 1.0
-while True:
-    print 'epoch', epoch, 'learning rate', learning_rate
-    train_fn = functools.partial(train_fn_w_learning_rate, learning_rate)
-    iterate_run(train_set, train_fn, 'train')
-    iterate_run(test_set, test_fn, 'test ')
-    epoch += 1
-    model.save()
-
-    continue
-    real = output.reshape(output.shape[0], 64, 64)
-    pred = run_fn(input_font, input_char).reshape((output.shape[0], 64, 64))
-    f, (ax1, ax2) = pyplot.subplots(1, 2)
-    ax1.matshow(real[0], cmap='gray')
-    ax2.matshow(pred[0], cmap='gray')
-    f.savefig("real_vs_pred.png")
-    pyplot.clf()
+for learning_rate in [1.0, 0.3, 0.1, 0.03, 0.01]:
+    epoch = 0
+    best_epoch = 0
+    best_loss = float('inf')
+    while True:
+        print 'epoch', epoch, 'learning rate', learning_rate
+        train_fn = functools.partial(train_fn_w_learning_rate, learning_rate)
+        iterate_run(train_set, train_fn, 'train')
+        loss = iterate_run(test_set, test_fn, 'test ')
+        model.save()
+        if loss < best_loss:
+            best_loss, best_epoch = loss, epoch
+        if epoch - best_epoch > 10:
+            break
+        epoch += 1
