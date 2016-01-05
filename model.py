@@ -23,7 +23,7 @@ def loss(a, b):
 
 
 class Model(object):
-    def __init__(self, n=None, k=62, wh=64*64, d=40, lambd=1e-8, artificial_font=False):
+    def __init__(self, n=None, k=62, wh=64*64, d=40, D=1024, lambd=1e-8, artificial_font=False):
         self.n, self.k, self.d = n, k, d
         self.target = T.matrix('target')
 
@@ -42,7 +42,7 @@ class Model(object):
 
         network = lasagne.layers.ConcatLayer([input_font_bottleneck, input_char_one_hot], name='input_concat')
         for i in xrange(4):
-            network = lasagne.layers.DenseLayer(network, 2048, name='dense_%d' % i, nonlinearity=lasagne.nonlinearities.leaky_rectify)
+            network = lasagne.layers.DenseLayer(network, D, name='dense_%d' % i, nonlinearity=lasagne.nonlinearities.leaky_rectify)
 
         network = lasagne.layers.DenseLayer(network, wh, nonlinearity=lasagne.nonlinearities.sigmoid, name='output_sigmoid')
         self.network = network
