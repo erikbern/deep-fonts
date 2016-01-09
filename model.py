@@ -34,7 +34,7 @@ class Model(object):
             self.input_font = T.ivector('input_font')
             input_font = lasagne.layers.InputLayer(shape=(None,), input_var=self.input_font, name='input_font')
             input_font_one_hot = OneHotLayer(input_font, n)
-            input_font_bottleneck = lasagne.layers.DenseLayer(input_font_one_hot, d, name='input_font_bottleneck', nonlinearity=lasagne.nonlinearities.leaky_rectify, b=None)
+            input_font_bottleneck = lasagne.layers.DenseLayer(input_font_one_hot, d, name='input_font_bottleneck', nonlinearity=None, b=None)
 
         self.input_char = T.ivector('input_char')
         input_char = lasagne.layers.InputLayer(shape=(None,), input_var=self.input_char, name='input_char')
