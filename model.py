@@ -23,7 +23,7 @@ def loss(a, b):
 
 
 class Model(object):
-    def __init__(self, n=None, k=62, wh=64*64, d=40, D=1024, lambd=1e-8, artificial_font=False):
+    def __init__(self, n=None, k=62, wh=64*64, d=40, D=1024, lambd=1e-7, artificial_font=False):
         self.n, self.k, self.d = n, k, d
         self.target = T.matrix('target')
 
@@ -50,7 +50,7 @@ class Model(object):
         self.prediction = lasagne.layers.get_output(network, deterministic=True)
         print self.prediction.dtype
         self.loss = loss(self.prediction_train, self.target).mean()
-        self.reg = lasagne.regularization.regularize_network_params(self.network, lasagne.regularization.l1) * lambd
+        self.reg = lasagne.regularization.regularize_network_params(self.network, lasagne.regularization.l2) * lambd
         self.input_font_bottleneck = input_font_bottleneck
 
     def get_train_fn(self):
