@@ -24,7 +24,7 @@ for i in xrange(n):
     for j in xrange(k):
         dataset.append((i, j))
 
-train_set, test_set = cross_validation.train_test_split(dataset, test_size=65536, random_state=0)
+train_set, test_set = cross_validation.train_test_split(dataset, test_size=0.10, random_state=0)
 
 def iterate_minibatches(dataset, batch_size=128):
     random.shuffle(dataset)
@@ -75,6 +75,6 @@ for learning_rate in [1.0, 0.3, 0.1, 0.03, 0.01]:
         if loss < best_loss:
             print 'best loss'
             best_loss, best_epoch = loss, epoch
-        if epoch - best_epoch > 5:
+        if epoch - best_epoch > 2:
             break
         epoch += 1
