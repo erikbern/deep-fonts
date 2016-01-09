@@ -20,13 +20,16 @@ model = model.Model(n, k, wh, artificial_font=True)
 model.try_load()
 run_fn = model.get_run_fn()
 
+def generate_font():
+    return numpy.random.exponential(0.08, size=model.d)
+
 def generate_input():
-    a = numpy.random.normal(scale=0.1, size=64)
+    a = generate_font()
     while True:
-        b = numpy.random.normal(scale=0.1, size=64)
+        b = generate_font()
         for p in numpy.linspace(0, 1, 10):
             print p
-            batch_is = numpy.zeros((k, 64), dtype=theano.config.floatX)
+            batch_is = numpy.zeros((k, model.d), dtype=theano.config.floatX)
             batch_js = numpy.zeros((k,), dtype=numpy.int32)
             i = random.randint(0, n-1)
             for z in xrange(k):
