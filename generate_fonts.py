@@ -19,9 +19,11 @@ wh = data.shape[2] * data.shape[3]
 model = model.Model(n, k, wh, artificial_font=True)
 model.try_load()
 run_fn = model.get_run_fn()
+W = model.get_font_embeddings()
+cov = numpy.cov(W.T)
 
 def generate_font():
-    return numpy.random.exponential(0.08, size=model.d)
+    return numpy.random.multivariate_normal(mean=numpy.zeros(model.d), cov=cov)
 
 def generate_input():
     a = generate_font()
