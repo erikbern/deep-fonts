@@ -10,6 +10,7 @@ import model
 from sklearn import cross_validation
 import sys
 import functools
+import time
 
 if not os.path.exists('fonts.hdf5'):
     wget.download('https://s3.amazonaws.com/erikbern/fonts.hdf5')
@@ -26,7 +27,7 @@ for i in xrange(n):
 
 train_set, test_set = cross_validation.train_test_split(dataset, test_size=0.10, random_state=0)
 
-def iterate_minibatches(dataset, batch_size=128):
+def iterate_minibatches(dataset, batch_size=2048):
     random.shuffle(dataset)
     for offset in xrange(0, len(dataset) - batch_size, batch_size):
         batch_fonts = numpy.zeros((batch_size,), dtype=numpy.int32)
@@ -44,11 +45,13 @@ def iterate_minibatches(dataset, batch_size=128):
 def iterate_run(dataset, fn, tag):
     total_loss, total_reg, total_count = 0, 0, 0
     for progress, input_font, input_char, output in iterate_minibatches(dataset):
+        t0 = time.time()
         loss, reg = fn(input_font, input_char, output)
+        t = time.time() - t0
         total_loss += float(loss)
         total_reg += float(reg)
         total_count += 1
-        sys.stdout.write('%s: %6.2f%%, perf: %.6f + %.6f (last minibatch: %.6f + %.6f)\r' % (tag, 100.0 * progress, total_loss / total_count, total_reg / total_count, float(loss), float(reg)))
+        sys.stdout.write('%s: %6.2f%%, perf: %.6f + %.6f (last minibatch: %.6f + %.6f, %.3fs)\r' % (tag, 100.0 * progress, total_loss / total_count, total_reg / total_count, float(loss), float(reg), t))
         sys.stdout.flush()
 
     sys.stdout.write('\n')
