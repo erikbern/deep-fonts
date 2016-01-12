@@ -1,31 +1,10 @@
-import h5py
 import random
 import numpy
 import theano
-from matplotlib import pyplot
-import pickle
-import os
-import wget
 import model
-from sklearn import cross_validation
 import sys
 import functools
 import time
-
-if not os.path.exists('fonts.hdf5'):
-    wget.download('https://s3.amazonaws.com/erikbern/fonts.hdf5')
-
-f = h5py.File('fonts.hdf5', 'r')
-data = f['fonts']
-n, k = data.shape[0], data.shape[1]
-wh = data.shape[2] * data.shape[3]
-
-dataset = []
-for i in xrange(n):
-    for j in xrange(k):
-        dataset.append((i, j))
-
-train_set, test_set = cross_validation.train_test_split(dataset, test_size=0.10, random_state=0)
 
 def iterate_minibatches(dataset, batch_size=2048):
     random.shuffle(dataset)
@@ -57,12 +36,15 @@ def iterate_run(dataset, fn, tag):
     sys.stdout.write('\n')
     return total_loss / total_count
 
-
+data = model.get_data()
+n, k = data.shape[0], data.shape[1]
+wh = data.shape[2] * data.shape[3]
 model = model.Model(n, k, wh)
 model.try_load()
 train_fn_w_learning_rate = model.get_train_fn()
 test_fn = model.get_test_fn()
 run_fn = model.get_run_fn()
+train_set, test_set = model.sets()
 
 print 'training...'
 for learning_rate in [1.0, 0.3, 0.1, 0.03, 0.01]:

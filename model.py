@@ -4,6 +4,9 @@ import theano.tensor as T
 import os
 import pickle
 import numpy
+import h5py
+import wget
+from sklearn import cross_validation
 
 class OneHotLayer(lasagne.layers.Layer):
     def __init__(self, incoming, nb_class, **kwargs):
@@ -93,5 +96,21 @@ class Model(object):
         f.close()
 
     def get_font_embeddings(self):
-        return self.input_font_bottleneck.W.get_value()
+        data = pickle.load(open('model.pickle'))
+        return data['input_font_bottleneck.W']
 
+    def sets(self):
+        dataset = []
+        for i in xrange(self.n):
+            for j in xrange(self.k):
+                dataset.append((i, j))
+
+        train_set, test_set = cross_validation.train_test_split(dataset, test_size=0.10, random_state=0)
+        return train_set, test_set
+
+def get_data():
+    if not os.path.exists('fonts.hdf5'):
+        wget.download('https://s3.amazonaws.com/erikbern/fonts.hdf5')
+
+    f = h5py.File('fonts.hdf5', 'r')
+    return f['fonts']
