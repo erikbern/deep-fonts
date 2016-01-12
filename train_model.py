@@ -5,8 +5,9 @@ import model
 import sys
 import functools
 import time
+from scipy.ndimage import filters
 
-def iterate_minibatches(dataset, batch_size=512):
+def iterate_minibatches(dataset, batch_size=512, train=False):
     random.shuffle(dataset)
     for offset in xrange(0, len(dataset) - batch_size, batch_size):
         batch_fonts = numpy.zeros((batch_size,), dtype=numpy.int32)
@@ -16,14 +17,17 @@ def iterate_minibatches(dataset, batch_size=512):
             i, j = dataset[offset + z]
             batch_fonts[z] = i
             batch_chars[z] = j
-            batch_ds[z] = data[i][j].flatten() * 1. / 255
+            m = data[i][j]
+            if train:
+                m = filters.gaussian_filter(m, sigma=random.random()*3)
+            batch_ds[z] = m.flatten() * 1. / 255
 
         yield 1.0 * offset / len(dataset), batch_fonts, batch_chars, batch_ds
 
         
-def iterate_run(dataset, fn, tag):
+def iterate_run(dataset, fn, tag, train=False):
     total_loss, total_reg, total_count = 0, 0, 0
-    for progress, input_font, input_char, output in iterate_minibatches(dataset):
+    for progress, input_font, input_char, output in iterate_minibatches(dataset, train=train):
         t0 = time.time()
         loss, reg = fn(input_font, input_char, output)
         t = time.time() - t0
@@ -53,9 +57,9 @@ for learning_rate in [1.0, 0.3, 0.1, 0.03, 0.01]:
     while True:
         print 'epoch', epoch, 'learning rate', learning_rate
         train_fn = functools.partial(train_fn_w_learning_rate, learning_rate)
-        iterate_run(train_set, train_fn, 'train')
-        loss = iterate_run(test_set, test_fn, 'test ')
-        if loss > last_loss:
+        iterate_run(train_set, train_fn, 'train', train=True)
+        loss = iterate_run(test_set, test_fn, 'test ', train=False)
+        if loss > last_loss and epoch > 5:
             break # decrease learning rate
         last_loss = loss
         model.save()
