@@ -8,6 +8,8 @@ import h5py
 import wget
 import gzip
 from sklearn import cross_validation
+import math
+import PIL, PIL.Image
 
 class OneHotLayer(lasagne.layers.Layer):
     def __init__(self, incoming, nb_class, **kwargs):
@@ -115,3 +117,18 @@ def get_data():
 
     f = h5py.File('fonts.hdf5', 'r')
     return f['fonts']
+
+def draw_grid(data, cols=None):
+    n = data.shape[0]
+    if cols is None:
+        cols = int(math.ceil(n**0.5))
+    rows = int(math.ceil(1.0 * n / cols))
+    data = data.reshape((n, 64, 64))
+
+    img = PIL.Image.new('L', (cols * 64, rows * 64), 255)
+    for z in xrange(n):
+        x, y = z % cols, z // cols
+        img_char = PIL.Image.fromarray(numpy.uint8(((1.0 - data[z]) * 255)))
+        img.paste(img_char, (x * 64, y * 64))
+
+    return img
