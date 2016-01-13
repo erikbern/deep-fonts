@@ -1,6 +1,5 @@
 import random
 import numpy
-import PIL, PIL.Image
 import random
 import model
 
