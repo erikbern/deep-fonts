@@ -13,12 +13,12 @@ cov = numpy.cov(W.T)
 def generate_font():
     return numpy.random.multivariate_normal(mean=numpy.zeros(model.d), cov=cov)
 
-def generate_input():
-    a = generate_font()
-    while True:
-        b = generate_font()
+def generate_input(n_fonts=5):
+    fonts = [generate_font() for f in xrange(n_fonts)]
+    for f in xrange(n_fonts):
+        a, b = fonts[f], fonts[(f+1)%n_fonts]
         for p in numpy.linspace(0, 1, 10):
-            print p
+            print f, p
             batch_is = numpy.zeros((model.k, model.d), dtype=theano.config.floatX)
             batch_js = numpy.zeros((model.k,), dtype=numpy.int32)
             for z in xrange(model.k):
@@ -26,7 +26,6 @@ def generate_input():
                 batch_js[z] = z
 
             yield batch_is, batch_js
-        a = b
 
 print 'generating...'
 frame = 0
