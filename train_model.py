@@ -9,11 +9,12 @@ from scipy.ndimage import filters
 
 def iterate_minibatches(dataset, batch_size=512):
     random.shuffle(dataset)
-    for offset in xrange(0, len(dataset) - batch_size, batch_size):
-        batch_fonts = numpy.zeros((batch_size,), dtype=numpy.int32)
-        batch_chars = numpy.zeros((batch_size,), dtype=numpy.int32)
-        batch_ds = numpy.zeros((batch_size, wh), dtype=theano.config.floatX)
-        for z in xrange(batch_size):
+    for offset in xrange(0, len(dataset), batch_size):
+        s = min(batch_size, len(dataset) - offset)
+        batch_fonts = numpy.zeros((s,), dtype=numpy.int32)
+        batch_chars = numpy.zeros((s,), dtype=numpy.int32)
+        batch_ds = numpy.zeros((s, wh), dtype=theano.config.floatX)
+        for z in xrange(s):
             i, j = dataset[offset + z]
             batch_fonts[z] = i
             batch_chars[z] = j
