@@ -21,18 +21,18 @@ def iterate_minibatches(dataset, batch_size=512):
             m = filters.gaussian_filter(data[i][j], sigma=random.random()*1.0) # data augmentation
             batch_ds[z] = m.flatten() * 1. / 255
 
-        yield 1.0 * offset / len(dataset), batch_fonts, batch_chars, batch_ds
+        yield s, 1.0 * offset / len(dataset), batch_fonts, batch_chars, batch_ds
 
         
 def iterate_run(dataset, fn, tag):
     total_loss, total_reg, total_count = 0, 0, 0
-    for progress, input_font, input_char, output in iterate_minibatches(dataset):
+    for s, progress, input_font, input_char, output in iterate_minibatches(dataset):
         t0 = time.time()
         loss, reg = fn(input_font, input_char, output)
         t = time.time() - t0
-        total_loss += float(loss)
-        total_reg += float(reg)
-        total_count += 1
+        total_loss += float(loss) * s
+        total_reg += float(reg) * s
+        total_count += s
         sys.stdout.write('%s: %6.2f%%, perf: %.6f + %.6f (last minibatch: %.6f + %.6f, %.3fs)\r' % (tag, 100.0 * progress, total_loss / total_count, total_reg / total_count, float(loss), float(reg), t))
         sys.stdout.flush()
 
