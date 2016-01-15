@@ -54,10 +54,10 @@ class Model(object):
         network = lasagne.layers.DenseLayer(network, wh, nonlinearity=lasagne.nonlinearities.sigmoid, name='output_sigmoid')
         self.network = network
         self.prediction_train = lasagne.layers.get_output(network, deterministic=False)
-        self.prediction = lasagne.layers.get_output(network, deterministic=True)
+        self.prediction_test = lasagne.layers.get_output(network, deterministic=True)
         print self.prediction.dtype
         self.loss_train = loss(self.prediction_train, self.target).mean()
-        self.loss_test = loss(self.prediction_train, self.target).mean()
+        self.loss_test = loss(self.prediction_test, self.target).mean()
         self.reg = lasagne.regularization.regularize_network_params(self.network, lasagne.regularization.l2) * lambd
         self.input_font_bottleneck = input_font_bottleneck
 
@@ -65,7 +65,7 @@ class Model(object):
         print 'compiling training fn'
         learning_rate = T.scalar('learning_rate')
         params = lasagne.layers.get_all_params(self.network, trainable=True)
-        updates = lasagne.updates.nesterov_momentum(self.loss + self.reg, params, learning_rate=learning_rate, momentum=lasagne.utils.floatX(0.9))
+        updates = lasagne.updates.nesterov_momentum(self.loss_train + self.reg, params, learning_rate=learning_rate, momentum=lasagne.utils.floatX(0.9))
         return theano.function([learning_rate, self.input_font, self.input_char, self.target], [self.loss_train, self.reg], updates=updates)
 
     def get_test_fn(self):
@@ -74,7 +74,7 @@ class Model(object):
         return theano.function([self.input_font, self.input_char, self.target], [self.loss_test, self.reg])
 
     def get_run_fn(self):
-        return theano.function([self.input_font, self.input_char], self.prediction)
+        return theano.function([self.input_font, self.input_char], self.prediction_test)
 
     def try_load(self):
         if not os.path.exists('model.pickle.gz'):
