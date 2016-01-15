@@ -55,7 +55,7 @@ class Model(object):
         self.network = network
         self.prediction_train = lasagne.layers.get_output(network, deterministic=False)
         self.prediction_test = lasagne.layers.get_output(network, deterministic=True)
-        print self.prediction.dtype
+        print self.prediction_train.dtype
         self.loss_train = loss(self.prediction_train, self.target).mean()
         self.loss_test = loss(self.prediction_test, self.target).mean()
         self.reg = lasagne.regularization.regularize_network_params(self.network, lasagne.regularization.l2) * lambd
