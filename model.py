@@ -29,7 +29,7 @@ def loss(a, b):
 
 
 class Model(object):
-    def __init__(self, n=None, k=62, wh=64*64, d=40, D=1024, lambd=1e-7, artificial_font=False):
+    def __init__(self, n=None, k=62, wh=64*64, d=40, D=1024, lambd=1e-7, font_noise=0.03, artificial_font=False):
         self.n, self.k, self.d = n, k, d
         self.target = T.matrix('target')
 
@@ -46,13 +46,14 @@ class Model(object):
         input_char = lasagne.layers.InputLayer(shape=(None,), input_var=self.input_char, name='input_char')
         input_char_one_hot = OneHotLayer(input_char, k)
 
-        network = lasagne.layers.ConcatLayer([input_font_bottleneck, input_char_one_hot], name='input_concat')
+        input_font_bottleneck_noised = lasagne.layers.GaussianNoiseLayer(input_font_bottleneck, sigma=font_noise)
+        network = lasagne.layers.ConcatLayer([input_font_bottleneck_noised, input_char_one_hot], name='input_concat')
         for i in xrange(4):
             network = lasagne.layers.DenseLayer(network, D, name='dense_%d' % i, nonlinearity=lasagne.nonlinearities.leaky_rectify)
 
         network = lasagne.layers.DenseLayer(network, wh, nonlinearity=lasagne.nonlinearities.sigmoid, name='output_sigmoid')
         self.network = network
-        self.prediction_train = lasagne.layers.get_output(network)
+        self.prediction_train = lasagne.layers.get_output(network, deterministic=False)
         self.prediction = lasagne.layers.get_output(network, deterministic=True)
         print self.prediction.dtype
         self.loss = loss(self.prediction_train, self.target).mean()
